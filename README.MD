@@ -6,16 +6,16 @@ Script to anonymize dicom sudies from a folder, the script loop for all folders 
 
 ### Requirements 📋
 
-This script use the pydicom and dicom2nifti libraries
+This script use pydicom and dicom2nifti libraries
 
 ```
 pip install pydicom
 pip install dicom2nifti
 ```
 
-### Anonimize dicom images 🔧
+### Anonymize dicom images 🔧
 
-call dicomanon.py especifying input directory output directory and ouput format
+Call dicomanon.py especifying input directory, output directory and ouput format
 
 ```
 python dicomanon.py input_directory output_directory --format_option
