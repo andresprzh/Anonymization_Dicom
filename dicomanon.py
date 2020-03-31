@@ -7,6 +7,9 @@ import pathlib
 import shutil
 import dicom2nifti
 
+# last index of input directory
+INPUT_FOLDER_INDEX=0
+
 # path output
 ANON_STUDY_P=''
 
@@ -15,6 +18,7 @@ TO_NIFTI=False
 
 # main function
 def main():
+    global INPUT_FOLDER_INDEX
     global ANON_STUDY_P
     global TO_NIFTI
     if len(sys.argv)<2:
@@ -31,6 +35,9 @@ def main():
     # directory where are located the studies to anonymize
     directory=sys.argv[1]
     
+    # last index of string of the input directory
+    INPUT_FOLDER_INDEX=len(directory)-1
+
     # output directory for anonymized data
     ANON_STUDY_P=sys.argv[2]
     
@@ -63,10 +70,12 @@ def loopPath(directory):
     elif os.path.isfile(paths[0]):
         
         # new path for anonimized images
-        anon_studypath=ANON_STUDY_P+directory[directory.find('/'):]
+        anon_studypath=ANON_STUDY_P+directory[INPUT_FOLDER_INDEX:]
         
         # create folder for the anonyme data
         pathlib.Path(anon_studypath).mkdir(parents=True, exist_ok=True)
+
+        print('***Anonymizing study %s ***' % directory)
 
         # anonymize images 
         images=anonymizeStudy(paths)
@@ -80,9 +89,9 @@ def loopPath(directory):
                 dicom2nifti.convert_dicom.dicom_array_to_nifti(images, anon_studypath,reorient_nifti=True)
                 shutil.rmtree(anon_studypath) #delete folder with dicom files
             except:
-                print("error converting to nifti study %s" % directory )            
+                print("ERROR converting to nifti ")            
             
-        print('%d Anonymized files in study %s ' %(len(images),directory))
+        print('%d Anonymized files and saved in  %s ' %(len(images),anon_studypath))
         
 
         return directory
@@ -106,8 +115,7 @@ def anonymizeStudy(study):
         # read the image
         try:
             image=pydicom.dcmread(filename)
-
-            output_filepath=ANON_STUDY_P+filename[filename.find('/'):]
+            output_filepath=ANON_STUDY_P+filename[INPUT_FOLDER_INDEX:]
 
             # if anonymize and save only image of CT and MR
             if image.Modality in {'CT','MR'}:
