@@ -34,12 +34,16 @@ def main():
 
     # directory where are located the studies to anonymize
     directory=sys.argv[1]
+    if directory[-1]!='/':
+        directory=directory+"/"
     
     # last index of string of the input directory
     INPUT_FOLDER_INDEX=len(directory)-1
 
     # output directory for anonymized data
     ANON_STUDY_P=sys.argv[2]
+    if ANON_STUDY_P[-1]!='/':
+        ANON_STUDY_P=ANON_STUDY_P+"/"
     
     # format option --nifti or --dicom
     if sys.argv[3]=='--nifti':
