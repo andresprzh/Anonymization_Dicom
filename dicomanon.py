@@ -115,12 +115,15 @@ def anonymizeStudy(study):
     # loop for every image in the study
     # for filename in glob.glob(study+'/*', recursive=True):
     for filename in study:
-
+        read = False
         # read the image
         try:
             image=pydicom.dcmread(filename)
             output_filepath=ANON_STUDY_P+filename[INPUT_FOLDER_INDEX:]
-
+            read = True
+        except:
+            print('error opening file %s' % filename)
+        if (read):
             # if anonymize and save only image of CT and MR
             if image.Modality in {'CT','MR'}:
                 # anonymize one image
@@ -133,8 +136,7 @@ def anonymizeStudy(study):
                         print('Error saving anonymized images')
                 else:
                     print('Error anonymising image')
-        except:
-            print('error opening file %s' % filename)
+        
 
     # Return the number of images anonymize
     return images
@@ -150,45 +152,48 @@ def anonymizeOne(image):
     # replace = replace with dummy value
     # remove = delete the element
     remove_elements = [
-        {'value':'AccessionNumber','action':'replace'},
-        {'value':'InstitutionName','action':'remove'},
-        {'value':'ReferringPhysicianIDSequence','action':'remove'},
-        {'value':'PhysiciansOfRecord','action':'remove'},
-        {'value':'PhysiciansOfRecordIDSequence','action':'remove'},
-        {'value':'PerformingPhysicianName','action':'remove'},
-        {'value':'PerformingPhysicianIDSequence','action':'remove'},
-        {'value':'NameOfPhysicianReadingStudy','action':'remove'},
-        {'value':'PhysicianReadingStudyIDSequence','action':'remove'},
-        {'value':'PatientInsurancePlanCodeSequence','action':'remove'},
-        {'value':'PatientPrimaryLanguageCodeSeq','action':'remove'},
-        # {'value':'OtherPatientIDs','action':'replace-valid'},
-        {'value':'OtherPatientIDs','action':'replace'},
-        {'value':'OtherPatientNames','action':'remove'},
-        {'value':'OtherPatientIDsSequence','action':'remove'},
-        {'value':'PatientAddress','action':'remove'},
-        {'value':'PatientMotherBirthName','action':'remove'},
-        {'value':'PatientName','action':'replace'},
-        {'value':'PatientID','action':'replace'},
-        {'value':'IssuerOfPatientID','action':'remove'},
-        {'value':'PatientBirthTime','action':'remove'},
-        {'value':'OtherPatientIDs','action':'remove'},
-        {'value':'OtherPatientNames','action':'remove'},
-        {'value':'PatientBirthName','action':'remove'},
-        {'value':'CountryOfResidence','action':'remove'},
-        {'value':'RegionOfResidence','action':'remove'},
-        {'value':'PatientTelephoneNumbers','action':'remove'},
-        {'value':'CurrentPatientLocation','action':'remove'},
-        {'value':'PatientInstitutionResidence','action':'remove'},
-        {'value':'InstitutionAddress','action':'remove'},
-        {'value':'ReferringPhysicianName','action':'replace'},
-        {'value':'ReferringPhysicianAddress','action':'remove'},
-        {'value':'ReferringPhysicianTelephoneNumber','action':'remove'},
-        {'value':'InstitutionalDepartmentName','action':'remove'},
-        {'value':'OperatorsName','action':'remove'},
-        # {'value':'StudyID','action':'replace-valid'},
-        {'value':'StudyID','action':'replace'},
-        {'value':'PersonName','action':'replace'},
-        {'value':'RequestAttributesSequence','action':'remove'},
+        {'key':(0x0008,0x0050),'value':'AccessionNumber','action':'replace'},
+        {'key':(0x0008,0x0080),'value':'InstitutionName','action':'remove'},
+        {'key':(0x0008,0x0096),'value':'ReferringPhysicianIDSequence','action':'remove'},
+        {'key':(0x0008,0x1048),'value':'PhysiciansOfRecord','action':'remove'},
+        {'key':(0x0008,0x1049),'value':'PhysiciansOfRecordIDSequence','action':'remove'},
+        {'key':(0x0008,0x1050),'value':'PerformingPhysicianName','action':'remove'},
+        {'key':(0x0008,0x1052),'value':'PerformingPhysicianIDSequence','action':'remove'},
+        {'key':(0x0008,0x1060),'value':'NameOfPhysicianReadingStudy','action':'remove'},
+        {'key':(0x0008,0x1062),'value':'PhysicianReadingStudyIDSequence','action':'remove'},
+        {'key':(0x0010,0x0050),'value':'PatientInsurancePlanCodeSequence','action':'remove'},
+        {'key':(0x0010,0x0101),'value':'PatientPrimaryLanguageCodeSeq','action':'remove'},
+        #{'key':(0x0010,0x1000),'value':'OtherPatientIDs','action':'replace-valid'},
+        {'key':(0x0010,0x1000),'value':'OtherPatientIDs','action':'replace'},
+        {'key':(0x0010,0x0010),'value':'PatientName','action':'remove'},
+        {'key':(0x0010,0x1002),'value':'OtherPatientIDsSequence','action':'remove'},
+        {'key':(0x0010,0x1040),'value':'PatientAddress','action':'remove'},
+        {'key':(0x0010,0x1060),'value':'PatientMotherBirthName','action':'remove'},
+        {'key':(0x0010,0x0010),'value':'PatientName','action':'replace'},
+        {'key':(0x0010,0x0020),'value':'PatientID','action':'replace'},
+        {'key':(0x0010,0x0021),'value':'IssuerOfPatientID','action':'remove'},
+        {'key':(0x0010,0x0032),'value':'PatientBirthTime','action':'remove'},
+        {'key':(0x0010,0x1000),'value':'OtherPatientIDs','action':'remove'},
+        {'key':(0x0010,0x1001),'value':'OtherPatientNames','action':'remove'},
+        {'key':(0x0010,0x1005),'value':'PatientBirthName','action':'remove'},
+        {'key':(0x0010,0x2150),'value':'CountryOfResidence','action':'remove'},
+        {'key':(0x0010,0x2152),'value':'RegionOfResidence','action':'remove'},
+        {'key':(0x0010,0x2154),'value':'PatientTelephoneNumbers','action':'remove'},
+        {'key':(0x0038,0x0300),'value':'CurrentPatientLocation','action':'remove'},
+        {'key':(0x0038,0x0400),'value':'PatientInstitutionResidence','action':'remove'},
+        {'key':(0x0008,0x0081),'value':'InstitutionAddress','action':'remove'},
+        {'key':(0x0008,0x0090),'value':'ReferringPhysicianName','action':'replace'},
+        {'key':(0x0008,0x0092),'value':'ReferringPhysicianAddress','action':'remove'},
+        {'key':(0x0008,0x0094),'value':'ReferringPhysicianTelephoneNumber','action':'remove'},
+        {'key':(0x0008,0x1040),'value':'InstitutionalDepartmentName','action':'remove'},
+        {'key':(0x0008,0x1070),'value':'OperatorsName','action':'remove'},
+        #{'key':(0x0020,0x0010),'value':'StudyID','action':'replace-valid'},
+        {'key':(0x0020,0x0010),'value':'StudyID','action':'replace'},
+        {'key':(0x0040,0xA123),'value':'PersonName','action':'replace'},
+        {'key':(0x0040,0x0275),'value':'RequestAttributesSequence','action':'remove'},
+        {'key':(0x0032,0x1032),'value':'RequestingPhysician','action':'remove'}
+        	
+
     ]
     
 
@@ -197,9 +202,10 @@ def anonymizeOne(image):
         # lop for elements to anonymize
         for element in remove_elements:
             # if element exist anonymize
-            if element['value'] in image:
+            if element['key'] in image:
                 if element['action']=='replace':
-                    image.data_element(element['value']).value = '19000101' #dummy value
+                    # image.data_element(element['key']).value = '19000101' #dummy value
+                    image[element['key']].value = '19000101' #dummy value
                 elif element['action']=='remove':
                     delattr(image, element['value'])  #delete value
         return True
