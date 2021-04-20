@@ -5,7 +5,7 @@ import os
 import pathlib
 
 import shutil
-import dicom2nifti
+
 
 # last index of input directory
 INPUT_FOLDER_INDEX=0
@@ -48,12 +48,16 @@ def main():
     # format option --nifti or --dicom
     if sys.argv[3]=='--nifti':
         TO_NIFTI=True
+        import dicom2nifti
+
     elif sys.argv[3]=='--dicom':
         TO_NIFTI=False
     else:
         print('please select valid format option')
         exit()
     
+    print('hola')
+    exit()
     loopPath(directory)
 
     return True
