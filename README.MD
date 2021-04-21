@@ -199,7 +199,7 @@ pip install dicom2nifti
 Call dicomanon.py especifying input directory, output directory and ouput format
 
 ```
-python dicomanon.py input_directory output_directory --format_option
+python dicomanon.py input_directory output_directory csv_file_for_patient_id --format_option
 ```
 
 format options:

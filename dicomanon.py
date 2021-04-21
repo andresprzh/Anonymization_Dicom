@@ -1,3 +1,4 @@
+import dicom2nifti
 import pydicom
 import sys
 import glob
@@ -5,22 +6,30 @@ import os
 import pathlib
 
 import shutil
-
+import  csv
 
 # last index of input directory
-INPUT_FOLDER_INDEX=0
+INPUT_FOLDER_INDEX = 0
 
 # path output
-ANON_STUDY_P=''
+ANON_STUDY_P = ''
 
 
-TO_NIFTI=False
+TO_NIFTI = False
+
+ID_PATIENT_DATA = []
 
 # main function
 def main():
+
+
     global INPUT_FOLDER_INDEX
     global ANON_STUDY_P
     global TO_NIFTI
+    global ID_PATIENT_DATA
+
+    
+
     if len(sys.argv)<2:
         print('please especify input directory')
         exit()
@@ -29,6 +38,9 @@ def main():
         exit()
         pass
     elif len(sys.argv)<4:
+        print('please especify csv file')
+        exit()
+    elif len(sys.argv)<5:
         print('please especify a format option')
         exit()
 
@@ -45,23 +57,30 @@ def main():
     if ANON_STUDY_P[-1]!='/':
         ANON_STUDY_P=ANON_STUDY_P+"/"
     
-    # format option --nifti or --dicom
-    if sys.argv[3]=='--nifti':
-        TO_NIFTI=True
-        import dicom2nifti
+    # File to asign a valid number to the patient ID
+    with open(sys.argv[3], newline='') as csvfile:
+        spamreader = csv.DictReader(csvfile)
+        for row in spamreader:
+            ID_PATIENT_DATA.append({'idpatient':row['idpatient'],'id':row['id']})
 
-    elif sys.argv[3]=='--dicom':
+    # format option --nifti or --dicom
+    if sys.argv[4]=='--nifti':
+        TO_NIFTI=True
+    elif sys.argv[4]=='--dicom':
         TO_NIFTI=False
     else:
         print('please select valid format option')
         exit()
     
-    print('hola')
-    exit()
     loopPath(directory)
 
     return True
-
+def anom_path(path):
+    for row in ID_PATIENT_DATA:
+        new_path = path.replace(row['idpatient'], row['id'])
+        if path != new_path:
+            return new_path
+    return path
 # loop searching for dicom files,
 # if find a dicom file anonimize it 
 # and save it in another folder
@@ -78,8 +97,9 @@ def loopPath(directory):
     elif os.path.isfile(paths[0]):
         
         # new path for anonimized images
-        anon_studypath=ANON_STUDY_P+directory[INPUT_FOLDER_INDEX:]
-        
+        anon_studypath = ANON_STUDY_P+directory[INPUT_FOLDER_INDEX:]
+        anon_studypath = anom_path(anon_studypath)
+
         # create folder for the anonyme data
         pathlib.Path(anon_studypath).mkdir(parents=True, exist_ok=True)
 
@@ -94,10 +114,10 @@ def loopPath(directory):
         # if format option is --nifti
         elif TO_NIFTI:
             try:
-                dicom2nifti.convert_dicom.dicom_array_to_nifti(images, anon_studypath,reorient_nifti=True)
+                dicom2nifti.convert_dicom.dicom_array_to_nifti(images, anon_studypath,reorient_nifti=False)
                 shutil.rmtree(anon_studypath) #delete folder with dicom files
-            except:
-                print("ERROR converting to nifti ")            
+            except Exception as e: 
+                print("ERROR converting to nifti ")         
             
         print('%d Anonymized files and saved in  %s ' %(len(images),anon_studypath))
         
@@ -124,6 +144,7 @@ def anonymizeStudy(study):
         try:
             image=pydicom.dcmread(filename)
             output_filepath=ANON_STUDY_P+filename[INPUT_FOLDER_INDEX:]
+            output_filepath = anom_path(output_filepath)
             read = True
         except:
             print('error opening file %s' % filename)
@@ -145,6 +166,11 @@ def anonymizeStudy(study):
     # Return the number of images anonymize
     return images
 
+# search for the id
+def searchid(id):
+    for row in ID_PATIENT_DATA:
+        if row['idpatient'] == id:
+            return row['id']
 
 # function that anonymize 1 image, 
 # receive  and image as an input 
@@ -174,7 +200,7 @@ def anonymizeOne(image):
         {'key':(0x0010,0x1040),'value':'PatientAddress','action':'remove'},
         {'key':(0x0010,0x1060),'value':'PatientMotherBirthName','action':'remove'},
         {'key':(0x0010,0x0010),'value':'PatientName','action':'replace'},
-        {'key':(0x0010,0x0020),'value':'PatientID','action':'replace'},
+        {'key':(0x0010,0x0020),'value':'PatientID','action':'replaceid'},
         {'key':(0x0010,0x0021),'value':'IssuerOfPatientID','action':'remove'},
         {'key':(0x0010,0x0032),'value':'PatientBirthTime','action':'remove'},
         {'key':(0x0010,0x1000),'value':'OtherPatientIDs','action':'remove'},
@@ -199,7 +225,6 @@ def anonymizeOne(image):
         	
 
     ]
-    
 
     try:
         image.remove_private_tags() #reomeve private tags
@@ -210,6 +235,8 @@ def anonymizeOne(image):
                 if element['action']=='replace':
                     # image.data_element(element['key']).value = '19000101' #dummy value
                     image[element['key']].value = '19000101' #dummy value
+                elif element['action']=='replaceid':
+                    image[element['key']].value = searchid(image[element['key']].value) #dummy value
                 elif element['action']=='remove':
                     delattr(image, element['value'])  #delete value
         return True
