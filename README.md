@@ -187,11 +187,13 @@ Script to anonymize dicom sudies from a folder, the script loop for all folders 
 
 ### Requirements 📋
 
-This script use pydicom and dicom2nifti libraries
+This script use pydicom and dicom2nifti libraries which are in the 
+[requirements.txt](./requirements.txt) file
 
-```
-pip install pydicom
-pip install dicom2nifti
+```bash
+python -m venv venv
+source venv/bin/activate
+pip intall -re requirements.txt
 ```
 
 ### Anonymize dicom images 🔧
@@ -201,6 +203,13 @@ Call dicomanon.py especifying input directory, output directory and ouput format
 ```
 python dicomanon.py input_directory output_directory csv_file_for_patient_id --format_option
 ```
+
+**Example CSV file**
+
+
+| idpatient  |                  id                     |
+|------------|-----------------------------------------|
+| Patient ID | New Id for patient after anonimization  |
 
 format options:
 * --nifti
