@@ -2,6 +2,6 @@ dicom2nifti==2.4.7
 nibabel==5.0.0
 numpy==1.24.1
 packaging==23.0
-pydicom==2.3.1
+pydicom==2.4.5
 python-gdcm==3.0.20
 scipy==1.10.0
